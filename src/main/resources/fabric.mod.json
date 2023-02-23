@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "tdsword",
+  "version": "${version}",
+  "name": "TransDimensionalSword",
+  "description": "",
+  "authors": [
+    "BeanFeed"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/tdsword/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.beanfeed.tdsword.client.TdswordClient"
+    ],
+    "main": [
+      "com.beanfeed.tdsword.Tdsword"
+    ]
+  },
+  "mixins": [
+    "tdsword.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.15",
+    "fabric": "*",
+    "minecraft": "1.19.2"
+  }
+}
