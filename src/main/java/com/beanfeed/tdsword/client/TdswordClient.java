@@ -8,6 +8,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.entity.EntityType;
 import org.apache.commons.lang3.Validate;
+import qouteall.imm_ptl.core.render.PortalEntityRenderer;
+import qouteall.imm_ptl.core.render.PortalRenderer;
 
 import java.util.Arrays;
 
@@ -15,6 +17,7 @@ import java.util.Arrays;
 public class TdswordClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        EntityRendererRegistry.register(TDEntityTypes.TEMP_PORTAL, PortalEntityRenderer::new);
     }
 
     /*
