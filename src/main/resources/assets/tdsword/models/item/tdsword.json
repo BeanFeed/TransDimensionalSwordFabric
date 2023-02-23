@@ -1,0 +1,14 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "tdsword:item/tdsword"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "tdsword:tdsunlit": 1
+      },
+      "model": "tdsword:item/unlit_tdsword"
+    }
+  ]
+}

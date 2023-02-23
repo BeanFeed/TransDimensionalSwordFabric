@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tdsword:item/blank_rune"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "tdsword:nblank": 1
+      },
+      "model": "tdsword:item/filled_rune"
+    }
+  ]
+}

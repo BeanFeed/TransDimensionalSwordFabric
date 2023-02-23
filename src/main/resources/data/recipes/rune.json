@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "www",
+    "wnw",
+    "www"
+  ],
+  "key": {
+    "w": {
+      "item": "minecraft:stone"
+    },
+    "n": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "item": "tdsword:rune",
+    "count": 1
+  }
+}
