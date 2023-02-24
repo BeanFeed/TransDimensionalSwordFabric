@@ -78,4 +78,9 @@ public class PortalUtil {
             //informer.accept(e);
         });
     }
+    public static void removeOverlappedPortals(World world, Vec3d pos, Vec3d normal, Portal portal) {
+        getPortalCluster(world, pos, normal, p -> Objects.equals(portal.specificPlayerId, p.specificPlayerId)).forEach((e) -> {
+            e.remove(Entity.RemovalReason.KILLED);
+        });
+    }
 }
