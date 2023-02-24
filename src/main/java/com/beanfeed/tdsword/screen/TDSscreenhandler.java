@@ -1,5 +1,6 @@
 package com.beanfeed.tdsword.screen;
 
+import com.beanfeed.tdsword.TransDimensionalSword;
 import com.beanfeed.tdsword.screen.GuiElements.TDSMGoldSlot;
 import com.beanfeed.tdsword.screen.GuiElements.TDSMLapisSlot;
 import com.beanfeed.tdsword.screen.GuiElements.TDSMRuneSlot;
@@ -21,25 +22,28 @@ import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
 
 public class TDSscreenhandler extends ScreenHandler {
-    private final Inventory inventory;
-    private Inventory tdsInv = new SimpleInventory(1);
+    private final SimpleInventory itemHandler;
+    private SimpleInventory tdsitemHandler = new SimpleInventory(3);
     private final ItemStack itemStack;
     public final boolean isActivated;
     public TDSscreenhandler(int syncId, PlayerInventory pInv) {
-        this(syncId, pInv, new SimpleInventory(3));
+        this(syncId, pInv, new SimpleInventory(3), pInv.player.getMainHandStack());
     }
-    public TDSscreenhandler(int syncId, PlayerInventory pInv, Inventory inv) {
+    public TDSscreenhandler(int syncId, PlayerInventory pInv, SimpleInventory inv, ItemStack stack) {
         super(TDScreenHandlers.TD_SWORD_MENU, syncId);
         checkSize(inv, 1);
-        this.inventory = inv;
+        this.itemHandler = inv;
 
-        this.itemStack = pInv.getMainHandStack();
+        this.itemStack = stack;
+        //TransDimensionalSword.LOGGER.info("Menu: " + String.valueOf(stack.getOrCreateNbt().getList("Items", 10)));
         inv.onOpen(pInv.player);
+        TransDimensionalSword.LOGGER.info(String.valueOf(itemHandler.getStack(2)));
+        this.isActivated = itemStack.getOrCreateNbt().contains("active") && itemStack.getOrCreateNbt().getBoolean("active");
+        if(!this.isActivated && !pInv.player.world.isClient()) {
+            if(!tdsitemHandler.getStack(0).isOf(Items.GHAST_TEAR)) tdsitemHandler.setStack(0,ItemStack.EMPTY);
+            inv.getStack(0).setCount(inv.getStack(0).getCount() / 2);
+            tdsitemHandler.setStack(0,inv.getStack(0));
 
-        this.isActivated = itemStack.getNbt().contains("active") && itemStack.getNbt().getBoolean("active");
-        if(this.isActivated) {
-            if(!tdsInv.getStack(0).isOf(Items.GHAST_TEAR)) tdsInv.setStack(0,ItemStack.EMPTY);
-            tdsInv.setStack(0,inv.getStack(0));
         }
         addPlayerInventory(pInv);
         addPlayerHotbar(pInv);
@@ -54,11 +58,11 @@ public class TDSscreenhandler extends ScreenHandler {
         if (slot != null && slot.hasStack()) {
             ItemStack originalStack = slot.getStack();
             newStack = originalStack.copy();
-            if (invSlot < this.inventory.size()) {
-                if (!this.insertItem(originalStack, this.inventory.size(), this.slots.size(), true)) {
+            if (invSlot < this.itemHandler.size()) {
+                if (!this.insertItem(originalStack, this.itemHandler.size(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(originalStack, 0, this.inventory.size(), false)) {
+            } else if (!this.insertItem(originalStack, 0, this.itemHandler.size(), false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -74,7 +78,7 @@ public class TDSscreenhandler extends ScreenHandler {
 
     @Override
     public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+        return this.itemHandler.canPlayerUse(player);
     }
 
     private void addPlayerInventory(PlayerInventory playerInventory) {
@@ -94,13 +98,13 @@ public class TDSscreenhandler extends ScreenHandler {
     private void addSwordSlots() {
         if(this.isActivated)
         {
-            this.addSlot(new TDSMGoldSlot(inventory, 0,62, 33));
-            this.addSlot(new TDSMLapisSlot(inventory, 1,80, 33));
-            this.addSlot(new TDSMRuneSlot(inventory, 2, 98, 33));
+            this.addSlot(new TDSMGoldSlot(itemHandler, 0,62, 33));
+            this.addSlot(new TDSMLapisSlot(itemHandler, 1,80, 33));
+            this.addSlot(new TDSMRuneSlot(itemHandler, 2, 98, 33));
         }
         else {
 
-            this.addSlot(new TDSMTearSlot(tdsInv, 0,80, 33));
+            this.addSlot(new TDSMTearSlot(tdsitemHandler, 0,80, 33));
 
         }
     }
@@ -108,21 +112,14 @@ public class TDSscreenhandler extends ScreenHandler {
     @Override
     public void close(PlayerEntity player) {
         super.close(player);
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        if(isActivated) {
-            DefaultedList<ItemStack> items = DefaultedList.ofSize(inventory.size(), ItemStack.EMPTY);
-            for(int i = 0; i < inventory.size(); i++) {
-                items.set(i,inventory.getStack(i));
-            }
+        if(!player.world.isClient()) {
+            NbtCompound nbt = itemStack.getOrCreateNbt();
+            if(isActivated) nbt.put("Items", itemHandler.toNbtList());
+            else nbt.put("Items", tdsitemHandler.toNbtList());
 
-            Inventories.writeNbt(nbt, items);
-        } else {
-            DefaultedList<ItemStack> items = DefaultedList.ofSize(tdsInv.size(), ItemStack.EMPTY);
-            for(int i = 0; i < tdsInv.size(); i++) {
-                items.set(i,tdsInv.getStack(i));
-            }
-            Inventories.writeNbt(nbt, items);
+            //TransDimensionalSword.LOGGER.info("Menu2: " + String.valueOf(itemStack.getOrCreateNbt().getList("Items", 10)));
         }
+
     }
 
 

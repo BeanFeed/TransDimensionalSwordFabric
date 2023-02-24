@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
@@ -37,7 +38,7 @@ public class TDSword extends Item {
         super(settings);
     }
 
-    private final DefaultedList<ItemStack> itemHandler = DefaultedList.ofSize(3,ItemStack.EMPTY);
+    private final SimpleInventory itemHandler = new SimpleInventory(3);
     private Vec3d lastWaypoint = null;
     private boolean isActivated = false;
     private int lapisSlot = 0;
@@ -53,7 +54,7 @@ public class TDSword extends Item {
     //Returns saved waypoint
     public Vec3d getLastWaypoint(ItemStack stack) {
         updateItemHandler(stack);
-        ItemStack rune = itemHandler.get(2);
+        ItemStack rune = itemHandler.getStack(2);
         NbtCompound nbt = rune.getOrCreateNbt();
         //TransDimensionalSword.LOGGER.info(String.valueOf(rune));
         if(!nbt.contains("waypoint")) return null;
@@ -62,14 +63,14 @@ public class TDSword extends Item {
     }
     public float getLastWaypointRotation(ItemStack stack) {
         updateItemHandler(stack);
-        ItemStack rune = itemHandler.get(2);
+        ItemStack rune = itemHandler.getStack(2);
         NbtCompound nbt = rune.getOrCreateNbt();
         if(!nbt.contains("rotation")) return 0.0f;
         return nbt.getFloat("rotation");
     }
     public RegistryKey<World> getLastDimension(ItemStack stack) {
         updateItemHandler(stack);
-        ItemStack rune = itemHandler.get(2);
+        ItemStack rune = itemHandler.getStack(2);
         NbtCompound nbt = rune.getOrCreateNbt();
         if(!nbt.contains("dimension")) return null;
         Identifier keyLocation = Identifier.tryParse(nbt.getString("dimension"));
@@ -77,12 +78,12 @@ public class TDSword extends Item {
     }
     public int getGoldAmount(ItemStack stack) {
         updateItemHandler(stack);
-        return itemHandler.get(0).getCount();
+        return itemHandler.getStack(0).getCount();
     }
     public void setGoldAmount(ItemStack stack, int amount) {
         updateItemHandler(stack);
-        itemHandler.get(0).setCount(amount);
-        Inventories.writeNbt(stack.getOrCreateNbt(), itemHandler);
+        itemHandler.getStack(0).setCount(amount);
+        stack.getOrCreateNbt().put("Items", itemHandler.toNbtList());
     }
     public boolean isActivated(ItemStack stack) {
         NbtCompound nbt = stack.getOrCreateNbt();
@@ -133,45 +134,42 @@ public class TDSword extends Item {
             if(!nbt.contains("Items")) {
                 nbt.put("Items", storedItemNBT);
             }
-            Inventories.readNbt(nbt, itemHandler);
+            itemHandler.readNbtList(nbt.getList("Items", 10));
             if(!pPlayer.world.isClient()) {
                 updateItemHandler(stack);
-                Inventory toSendInv = new SimpleInventory(3);
-                TransDimensionalSword.LOGGER.info(String.valueOf(toSendInv));
-                for(int i = 0; i < 3; i++) {
-                    toSendInv.setStack(i,itemHandler.get(i));
-                }
+
                 pPlayer.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, playerInventory, playerx) -> {
-                    return new TDSscreenhandler(syncId, playerInventory, toSendInv);
+                    return new TDSscreenhandler(syncId, playerInventory, itemHandler, playerInventory.player.getStackInHand(pUsedHand));
                 }, Text.translatable("menu.title.tdsword.tdswordmenu")));
                 //TransDimensionalSword.LOGGER.info("Open");
             }
         } else if(isActivated){
             updateItemHandler(pPlayer.getStackInHand(pUsedHand));
-            ItemStack lapisStack = itemHandler.get(1);
+            ItemStack lapisStack = itemHandler.getStack(1);
             if(lapisStack.getCount() == 0) return TypedActionResult.fail(pPlayer.getStackInHand(pUsedHand));;
-            ItemStack itemStack = itemHandler.get(2);
+            ItemStack itemStack = itemHandler.getStack(2);
             //TransDimensionalSword.LOGGER.info(String.valueOf(Rune.getWaypointNBT(itemStack, pPlayer)));
             lapisStack.decrement(1);
             itemStack.writeNbt(Rune.getWaypointNBT(itemStack, pPlayer));
 
             itemStack.setCustomName(Text.translatable("item.tdsword.filled_rune"));
             NbtCompound nbt = pPlayer.getStackInHand(pUsedHand).getOrCreateNbt();
-            Inventories.writeNbt(nbt, itemHandler);
+
+            nbt.put("Items", itemHandler.toNbtList());
             //var rotation = new Vec3(Math.round(tempLastWaypointRotation), 0, Math.round(tempLastWaypointRotation);
 
         }else {
             updateItemHandler(pPlayer.getStackInHand(pUsedHand));
             updateActive(pPlayer.getStackInHand(pUsedHand));
-            ItemStack stack = itemHandler.get(0);
+            ItemStack stack = itemHandler.getStack(0);
             //TransDimensionalSword.LOGGER.info("Check Activate");
             //TransDimensionalSword.LOGGER.info(String.valueOf(stack.getCount() == 0));
             if(stack.getCount() == 0) return TypedActionResult.fail(pPlayer.getStackInHand(pUsedHand));
             else {
                 setActivated(pPlayer.getStackInHand(pUsedHand), true);
-                itemHandler.set(0, ItemStack.EMPTY);
+                itemHandler.setStack(0, ItemStack.EMPTY);
                 NbtCompound nbt = pPlayer.getStackInHand(pUsedHand).getOrCreateNbt();
-                Inventories.writeNbt(nbt, itemHandler);
+                nbt.put("Items", itemHandler.toNbtList());
                 pPlayer.world.playSound(null, Utils.Vec3ToBlockPos(pPlayer.getPos()), new SoundEvent(TDSounds.TD_IGNITE.getId()), SoundCategory.PLAYERS, 1f, 1f);
                 //TransDimensionalSword.LOGGER.info(String.valueOf(isActivated(stack)));
             }
@@ -182,7 +180,8 @@ public class TDSword extends Item {
     }
     private void updateItemHandler(ItemStack stack) {
         NbtCompound nbt = stack.getOrCreateNbt();
-        Inventories.readNbt(nbt, itemHandler);
+        itemHandler.readNbtList(nbt.getList("Items", 10));
+        //TransDimensionalSword.LOGGER.info(String.valueOf(nbt.getList("Items", 10)));
     }
 
 }

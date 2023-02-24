@@ -12,11 +12,11 @@ public class Rune extends Item {
         super(settings);
     }
     public static NbtCompound getWaypointNBT(ItemStack stack, PlayerEntity pPlayer) {
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = stack.getOrCreateNbt();
 
         if(nbt.contains("waypoint")) { return nbt;}
         var position = pPlayer.getPos();
-        var pPos = new BlockPos(((int)position.x), position.y + 1, ((int)position.z));
+        var pPos = new BlockPos(((int)position.x), position.y + 1, ((int)position.z) - 1);
         //TransDimensionalSword.LOGGER.info(String.valueOf(pPos));
         NbtCompound waypoint = NbtHelper.fromBlockPos(pPos);
         //CompoundTag rotation = new CompoundTag();

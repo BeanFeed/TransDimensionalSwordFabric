@@ -8,7 +8,7 @@ import qouteall.imm_ptl.core.portal.Portal;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
 
 public class TemporaryPortal extends Portal {
-    public double targetWidth = 1;
+
     public TemporaryPortal(EntityType<?> entityType, World world) {
         super(entityType, world);
     }
@@ -23,14 +23,6 @@ public class TemporaryPortal extends Portal {
         this.remove(RemovalReason.KILLED);
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        if(this.width != targetWidth  && !this.world.isClient()) {
-            this.width = targetWidth;
-            reloadPortal();
-        }
-    }
     private void blank(){}
     /*
     @Override
@@ -47,9 +39,5 @@ public class TemporaryPortal extends Portal {
         super.tick();
     }
      */
-    private void reloadPortal() {
-        this.updateCache();
-        this.rectifyClusterPortals();
-        this.reloadAndSyncToClient();
-    }
+
 }
