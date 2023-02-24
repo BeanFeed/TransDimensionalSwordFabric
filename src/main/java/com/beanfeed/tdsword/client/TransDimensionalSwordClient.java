@@ -1,23 +1,22 @@
 package com.beanfeed.tdsword.client;
 
-import com.beanfeed.tdsword.client.renderers.TemporaryPortalRenderer;
 import com.beanfeed.tdsword.entity.TDEntityTypes;
+import com.beanfeed.tdsword.screen.TDScreenHandlers;
+import com.beanfeed.tdsword.screen.TDSscreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.entity.EntityType;
-import org.apache.commons.lang3.Validate;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import qouteall.imm_ptl.core.render.PortalEntityRenderer;
-import qouteall.imm_ptl.core.render.PortalRenderer;
-
-import java.util.Arrays;
 
 @Environment(EnvType.CLIENT)
-public class TdswordClient implements ClientModInitializer {
+public class TransDimensionalSwordClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityRendererRegistry.register(TDEntityTypes.TEMP_PORTAL, PortalEntityRenderer::new);
+
+        HandledScreens.register(TDScreenHandlers.TD_SWORD_MENU, TDSscreen::new);
     }
 
     /*

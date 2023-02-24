@@ -13,10 +13,10 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.beanfeed.tdsword.client.TdswordClient"
+      "com.beanfeed.tdsword.client.TransDimensionalSwordClient"
     ],
     "main": [
-      "com.beanfeed.tdsword.Tdsword"
+      "com.beanfeed.tdsword.TransDimensionalSword"
     ]
   },
   "mixins": [
