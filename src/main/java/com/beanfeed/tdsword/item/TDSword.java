@@ -1,26 +1,20 @@
 package com.beanfeed.tdsword.item;
 
-import com.beanfeed.tdsword.TransDimensionalSword;
 import com.beanfeed.tdsword.Utils;
 import com.beanfeed.tdsword.screen.TDSscreenhandler;
 import com.beanfeed.tdsword.sound.TDSounds;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.MerchantScreenHandler;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
@@ -49,8 +43,15 @@ public class TDSword extends Item {
     private List<Vec3d> Waypoints;
     private float lastWaypointYRotation = 0.0f;
     private RegistryKey<World> lastDim = null;
+    private int cooldown = 0;
 
+    public boolean canSpawn() {
+        return cooldown == 0;
+    }
 
+    public void startCooldown() {
+        cooldown = 20;
+    }
     //Returns saved waypoint
     public Vec3d getLastWaypoint(ItemStack stack) {
         updateItemHandler(stack);
@@ -184,6 +185,10 @@ public class TDSword extends Item {
         NbtCompound nbt = stack.getOrCreateNbt();
         Inventories.readNbt(nbt, itemHandler);
         //TransDimensionalSword.LOGGER.info(String.valueOf(nbt.getList("Items", 10)));
+    }
+    @Override
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        if(cooldown != 0) cooldown--;
     }
 
 }

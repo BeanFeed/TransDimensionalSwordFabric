@@ -49,7 +49,7 @@ public class PortalUtil {
                 portal.setPosition(pos.x, pos.y, pos.z);
                 portal.axisW = axisW;
                 portal.axisH = axisH;
-                portal.width = 1.0;
+                portal.width = width;
                 portal.height = height;
                 return portal;
             }

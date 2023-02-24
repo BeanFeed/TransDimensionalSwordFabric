@@ -12,7 +12,8 @@ public class TemporaryPortal extends Portal {
     public TemporaryPortal(EntityType<?> entityType, World world) {
         super(entityType, world);
     }
-
+    public double targetWidth = 1;
+    private int wait = 1;
     @Override
     public void onEntityTeleportedOnServer(Entity entity) {
         super.onEntityTeleportedOnServer(entity);
@@ -39,5 +40,17 @@ public class TemporaryPortal extends Portal {
         super.tick();
     }
      */
-
+    @Override
+    public void tick() {
+        super.tick();
+        if(wait == 0 && this.width != targetWidth  && !this.world.isClient()) {
+            this.width = targetWidth;
+            reloadPortal();
+        } else wait--;
+    }
+    private void reloadPortal() {
+        this.updateCache();
+        this.rectifyClusterPortals();
+        this.reloadAndSyncToClient();
+    }
 }

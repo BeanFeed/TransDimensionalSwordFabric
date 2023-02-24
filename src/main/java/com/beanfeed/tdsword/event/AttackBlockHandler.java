@@ -26,13 +26,15 @@ public class AttackBlockHandler implements AttackBlockCallback {
 
             if(sword.getGoldAmount(player.getMainHandStack()) == 0) return ActionResult.SUCCESS;
             TransDimensionalSword.LOGGER.info(String.valueOf(!world.isClient()));
+
+            if(!sword.canSpawn()) return ActionResult.FAIL;
             if(toGo != null && player != null && !world.isClient() && direction == Direction.UP) {
                 //gets block to spawn portal on top of
 
                 BlockPos orgtoSpawn = pos;
                 Vec3d toSpawn = new Vec3d(orgtoSpawn.getX(), orgtoSpawn.getY(), orgtoSpawn.getZ());
                 //makes new portal object with dimensions
-                TemporaryPortal portal = PortalUtil.makeTempPortal(1,2, player);
+                TemporaryPortal portal = PortalUtil.makeTempPortal(0.01,2, player);
                 //TransDimensionalSword.LOGGER.info("Try Spawn");
                 if (portal == null) {
                     //Failed to make portal
@@ -65,10 +67,12 @@ public class AttackBlockHandler implements AttackBlockCallback {
                 //Spawns the portal on the server side
                 //.LOGGER.info("Try Spawn");
                 McHelper.spawnServerEntity(portal);
+                PortalUtil.removeOverlappedPortals(world, toSpawn, portal.transformLocalVecNonScale(portal.getNormal().multiply(-1)), portal);
                 //Creates another portal at the new portals destination
                 PortalUtil.completeBiWayPortal(portal);
                 var goldAmount = sword.getGoldAmount(player.getMainHandStack());
                 sword.setGoldAmount(player.getMainHandStack(), goldAmount - 1);
+                sword.startCooldown();
 
             }
             //Cancels the event, so it doesn't break the block in creative mode
